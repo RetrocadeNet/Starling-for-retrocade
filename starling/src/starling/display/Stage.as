@@ -63,6 +63,7 @@ package starling.display
         private var mWidth:int;
         private var mHeight:int;
         private var mColor:uint;
+        private var mBroadcastEnterFrame:Boolean;
         private var mEnterFrameEvent:EnterFrameEvent;
         private var mEnterFrameListeners:Vector.<DisplayObject>;
         
@@ -80,7 +81,12 @@ package starling.display
         public function advanceTime(passedTime:Number):void
         {
             mEnterFrameEvent.reset(Event.ENTER_FRAME, false, passedTime);
-            broadcastEvent(mEnterFrameEvent);
+
+            if (broadcastEnterFrame){
+				broadcastEvent(mEnterFrameEvent);
+            } else {
+                dispatchEvent(mEnterFrameEvent);
+            }
         }
 
         /** Returns the object that is found topmost beneath a point in stage coordinates, or  
@@ -228,5 +234,13 @@ package starling.display
          *  to the <code>viewPort</code> property of the Starling object. */
         public function get stageHeight():int { return mHeight; }
         public function set stageHeight(value:int):void { mHeight = value; }
+
+        public function get broadcastEnterFrame():Boolean {
+            return mBroadcastEnterFrame;
+        }
+
+        public function set broadcastEnterFrame(value:Boolean):void {
+            mBroadcastEnterFrame = value;
+        }
     }
 }

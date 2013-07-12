@@ -28,6 +28,7 @@ package starling.text
     import starling.display.Sprite;
     import starling.events.Event;
     import starling.textures.Texture;
+    import starling.textures.TextureSmoothing;
     import starling.utils.HAlign;
     import starling.utils.VAlign;
 
@@ -82,6 +83,7 @@ package starling.text
         private var mFontSize:Number;
         private var mColor:uint;
         private var mText:String;
+        private var mHtmlText:Boolean;
         private var mFontName:String;
         private var mHAlign:String;
         private var mVAlign:String;
@@ -95,6 +97,8 @@ package starling.text
         private var mRequiresRedraw:Boolean;
         private var mIsRenderedText:Boolean;
         private var mTextBounds:Rectangle;
+        private var mColorVector:Vector.<uint>;
+        private var mCustomBatch:Vector.<TextFieldBatch>;
         private var mBatchable:Boolean;
         
         private var mHitArea:DisplayObject;
@@ -103,6 +107,9 @@ package starling.text
         private var mImage:Image;
         private var mQuadBatch:QuadBatch;
         
+        private var mSmoothing:String;
+
+
         // this object will be used for text rendering
         private static var sNativeTextField:flash.text.TextField = new flash.text.TextField();
         
@@ -118,6 +125,7 @@ package starling.text
             mBorder = null;
             mKerning = true;
             mBold = bold;
+            mSmoothing = TextureSmoothing.BILINEAR;
             mAutoSize = TextFieldAutoSize.NONE;
             this.fontName = fontName;
             
@@ -146,7 +154,11 @@ package starling.text
         public override function render(support:RenderSupport, parentAlpha:Number):void
         {
             if (mRequiresRedraw) redraw();
-            super.render(support, parentAlpha);
+            if (mQuadBatch){
+                support.batchQuadBatch(mQuadBatch, parentAlpha * this.alpha);
+            } else {
+				super.render(support, parentAlpha);
+			}
         }
         
         /** Forces the text field to be constructed right away. Normally, 
@@ -332,41 +344,53 @@ package starling.text
             var bitmapFont:BitmapFont = bitmapFonts[mFontName];
             if (bitmapFont == null) throw new Error("Bitmap font not registered: " + mFontName);
             
-            var width:Number  = mHitArea.width;
-            var height:Number = mHitArea.height;
-            var hAlign:String = mHAlign;
-            var vAlign:String = mVAlign;
-            
-            if (isHorizontalAutoSize)
-            {
-                width = int.MAX_VALUE;
-                hAlign = HAlign.LEFT;
-            }
-            if (isVerticalAutoSize)
-            {
-                height = int.MAX_VALUE;
-                vAlign = VAlign.TOP;
-            }
-            
-            bitmapFont.fillQuadBatch(mQuadBatch,
-                width, height, mText, mFontSize, mColor, hAlign, vAlign, mAutoScale, mKerning);
-            
-            mQuadBatch.batchable = mBatchable;
-            
-            if (mAutoSize != TextFieldAutoSize.NONE)
-            {
-                mTextBounds = mQuadBatch.getBounds(mQuadBatch, mTextBounds);
-                
-                if (isHorizontalAutoSize)
-                    mHitArea.width  = mTextBounds.x + mTextBounds.width;
-                if (isVerticalAutoSize)
-                    mHitArea.height = mTextBounds.y + mTextBounds.height;
-            }
-            else
-            {
-                // hit area doesn't change, text bounds can be created on demand
-                mTextBounds = null;
-            }
+            if (mCustomBatch){
+                for each(var batch:TextFieldBatch in mCustomBatch){
+                    bitmapFont.fillQuadBatch(mQuadBatch, batch.width || mHitArea.width,
+                            batch.height || mHitArea.height, batch.text, batch.size || mFontSize,
+                            (batch.color == -1 ? mColor : batch.color),
+                            mSmoothing, HAlign.LEFT, VAlign.TOP,
+                            false, true, null, batch.x,  batch.y
+                    );
+                }
+            } else {
+	            var width:Number  = mHitArea.width;
+	            var height:Number = mHitArea.height;
+	            var hAlign:String = mHAlign;
+	            var vAlign:String = mVAlign;
+	            
+	            if (isHorizontalAutoSize)
+	            {
+	                width = int.MAX_VALUE;
+	                hAlign = HAlign.LEFT;
+	            }
+	            if (isVerticalAutoSize)
+	            {
+	                height = int.MAX_VALUE;
+	                vAlign = VAlign.TOP;
+	            }
+	            
+	                bitmapFont.fillQuadBatch(mQuadBatch,
+	                    mHitArea.width, mHitArea.height, mText, mFontSize, mColor, mSmoothing,
+	                        mHAlign, mVAlign, mAutoScale, mKerning, mColorVector);
+	            
+	            mQuadBatch.batchable = mBatchable;
+	            
+	            if (mAutoSize != TextFieldAutoSize.NONE)
+	            {
+	                mTextBounds = mQuadBatch.getBounds(mQuadBatch, mTextBounds);
+	                
+	                if (isHorizontalAutoSize)
+	                    mHitArea.width  = mTextBounds.x + mTextBounds.width;
+	                if (isVerticalAutoSize)
+	                    mHitArea.height = mTextBounds.y + mTextBounds.height;
+	            }
+	            else
+	            {
+	                // hit area doesn't change, text bounds can be created on demand
+	                mTextBounds = null;
+				}
+			}
         }
         
         // helpers
@@ -409,9 +433,24 @@ package starling.text
         /** Returns the bounds of the text within the text field. */
         public function get textBounds():Rectangle
         {
+            return textBoundsOriginal.clone();
+        }
+
+        internal function get textBoundsOriginal():Rectangle
+        {
             if (mRequiresRedraw) redraw();
             if (mTextBounds == null) mTextBounds = mQuadBatch.getBounds(mQuadBatch);
-            return mTextBounds.clone();
+            return mTextBounds;
+        }
+
+        public function get textWidth():Number
+        {
+            return textBoundsOriginal.width;
+        }
+
+        public function get textHeight():Number
+        {
+            return textBoundsOriginal.height;
         }
         
         /** @inheritDoc */
@@ -430,6 +469,7 @@ package starling.text
             
             mHitArea.width = value;
             mRequiresRedraw = true;
+            updateBorder();
         }
         
         /** @inheritDoc */
@@ -437,6 +477,7 @@ package starling.text
         {
             mHitArea.height = value;
             mRequiresRedraw = true;
+            updateBorder();
         }
         
         /** The displayed text. */
@@ -447,6 +488,15 @@ package starling.text
             if (mText != value)
             {
                 mText = value;
+                mRequiresRedraw = true;
+            }
+        }
+        
+        /** Whether to pass the given text as HTML Text */
+        public function get htmlText():Boolean { return mHtmlText; }
+        public function set htmlText(value:Boolean):void{
+            if (value != mHtmlText){
+                mHtmlText = value;
                 mRequiresRedraw = true;
             }
         }
@@ -486,6 +536,7 @@ package starling.text
             if (mColor != value)
             {
                 mColor = value;
+                updateBorder();
                 mRequiresRedraw = true;
             }
         }
@@ -633,6 +684,23 @@ package starling.text
             mRequiresRedraw = true;
         }
         
+        public function get colorVector():Vector.<uint> { return mColorVector; }
+        public function set colorVector(value:Vector.<uint>):void{
+            if (mColorVector != value){
+                mColorVector = value;
+                mRequiresRedraw = true;
+            }
+        }
+
+        public function get customBatches():Vector.<TextFieldBatch>{return mCustomBatch; }
+        public function set customBatches(value:Vector.<TextFieldBatch>):void{
+            if (mCustomBatch != value){
+                mCustomBatch = value;
+                mRequiresRedraw = true;
+            }
+        }
+
+
         /** Makes a bitmap font available at any TextField in the current stage3D context.
          *  The font is identified by its <code>name</code>.
          *  Per default, the <code>name</code> property of the bitmap font will be used, but you 
@@ -659,6 +727,38 @@ package starling.text
             return bitmapFonts[name];
         }
         
+        public function generateColorVector(allRanges:Object):Vector.<uint>{
+            var textLength:uint = mText.length;
+            var colorVector:Vector.<uint> = new Vector.<uint>(textLength, true);
+
+            for (var i:int = 0; i < textLength; i++){
+                colorVector[i] = mColor;
+            }
+
+            for (var color:String in allRanges){
+                var ranges:Array = allRanges[color];
+                var colorUint:uint = parseInt(color,  16);
+
+                for each(var range:Object in ranges){
+                    var rangeString:String = range.toString();
+
+                    if (rangeString.indexOf("-") !== -1){
+                        var hyphen:int = rangeString.indexOf("-");
+                        var leftRange:int = parseInt(rangeString.substr(0, hyphen));
+                        var rightRange:int = Math.min(textLength - 1, parseInt(rangeString.substr(hyphen + 1)));
+
+                        for (; leftRange <= rightRange; leftRange++){
+                            colorVector[leftRange] = colorUint;
+                        }
+                    } else {
+                        colorVector[parseInt(rangeString)] = colorUint;
+                    }
+                }
+            }
+
+            return colorVector;
+        }
+        
         /** Stores the currently available bitmap fonts. Since a bitmap font will only work
          *  in one Stage3D context, they are saved in Starling's 'contextData' property. */
         private static function get bitmapFonts():Dictionary
@@ -672,6 +772,17 @@ package starling.text
             }
             
             return fonts;
+        }
+
+        public function get smoothing():String {
+            return mSmoothing;
+        }
+
+        public function set smoothing(value:String):void {
+            if (value != mSmoothing){
+                mSmoothing = value;
+                mRequiresRedraw = true;
+            }
         }
     }
 }

@@ -900,5 +900,21 @@ package starling.core
             else
                 sHandleLostContext = value;
         }
+
+        public function get broadcastEnterFrame():Boolean{
+            return mStage.broadcastEnterFrame;
+        }
+
+        public function set broadcastEnterFrame(value:Boolean):void{
+            mStage.broadcastEnterFrame = true;
+        }
+
+        public static function get stageWidth():int{
+            return Starling.current.viewPort.width;
+        }
+
+        public static function get stageHeight():int{
+            return Starling.current.viewPort.height;
+        }
     }
 }

@@ -210,6 +210,10 @@ package starling.display
             return mChildren.indexOf(child);
         }
         
+        public function getAllChildren():Vector.<DisplayObject>{
+            return mChildren.concat();
+        }
+        
         /** Moves a child to a certain index. Children at and after the replaced position move up.*/
         public function setChildIndex(child:DisplayObject, index:int):void
         {

@@ -1,0 +1,61 @@
+<project name="Framework 3.0" basedir="." default="releaseStarling">
+    <import file="../Ant/sdkResolve.xml"/>
+
+    <taskdef resource="flexTasks.tasks" classpath="${SDK}/ant/lib/flexTasks.jar" />
+
+    <property name="SRC" location="${basedir}/src/" />
+
+    <target name="releaseStarling">
+        <build
+            fileName="starling.swc"
+            />
+    </target>
+
+    <macrodef name="build">
+        <attribute name="fileName" />
+
+        <sequential>
+            <resolveSdk46 />
+
+            <exec executable='${SDK}/bin/compc.exe' resolveexecutable="true">
+                <arg value="-compiler.incremental=true" />
+                <arg value="-load-config=${SDK}/frameworks/air-config.xml" />
+                <arg value="-target-player=11.6" />
+                <arg value="-compiler.source-path=${SDK}/frameworks" />
+                <arg value="-output=${basedir}/bin/@{fileName}" />
+                <arg value="-source-path=starling/src"/>
+                <arg value="-compiler.warn-no-constructor=false"/>
+                <arg value="-include-classes"/>
+                    <arg value="starling.animation.DelayedCall"/>
+                    <arg value="starling.animation.IAnimatable"/>
+                    <arg value="starling.animation.Juggler"/>
+                    <arg value="starling.animation.Transitions"/>
+                    <arg value="starling.animation.Tween"/>
+                    <arg value="starling.core.RenderSupport"/>
+                    <arg value="starling.core.Starling"/>
+                    <arg value="starling.core.starling_internal"/>
+                    <arg value="starling.core.StatsDisplay"/>
+                    <arg value="starling.core.TouchMarker"/>
+                    <arg value="starling.core.TouchProcessor"/>
+                    <arg value="starling.display.Image"/>
+                    <arg value="starling.display.Sprite"/>
+                    <arg value="starling.display.MovieClip"/>
+                    <arg value="starling.display.TouchShape"/>
+                    <arg value="starling.events.Event"/>
+                    <arg value="starling.events.TouchEvent"/>
+                    <arg value="starling.events.TouchPhase"/>
+                    <arg value="starling.filters.BlurFilter"/>
+                    <arg value="starling.filters.ColorMatrixFilter"/>
+                    <arg value="starling.filters.DisplacementMapFilter"/>
+                    <arg value="starling.filters.FragmentFilter"/>
+                    <arg value="starling.filters.FragmentFilterMode"/>
+                    <arg value="starling.text.TextField"/>
+                    <arg value="starling.text.BitmapFont"/>
+                    <arg value="starling.textures.Texture"/>
+                    <arg value="starling.textures.TextureAtlas"/>
+                    <arg value="starling.textures.TextureSmoothing"/>
+                    <arg value="starling.utils.Color"/>
+            </exec>
+        </sequential>
+    </macrodef>
+</project>

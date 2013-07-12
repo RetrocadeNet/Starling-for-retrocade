@@ -271,7 +271,6 @@ package starling.display
         public function getBounds(targetSpace:DisplayObject, resultRect:Rectangle=null):Rectangle
         {
             throw new AbstractMethodError();
-            return null;
         }
         
         /** Returns the object that is found topmost beneath a point in local coordinates, or nil if 
@@ -315,6 +314,48 @@ package starling.display
             throw new AbstractMethodError();
         }
         
+        /** Mock ASDoc */
+        final public function alignCenter(offset:Number = 0):void {
+            x = ((Starling.stageWidth - width) / 2 | 0) + offset | 0;
+        }
+
+        /** Mock ASDoc */
+        final public function alignCenterParent(offset:Number = 0, width:Number = NaN):void {
+            if (isNaN(width)) {
+                if (!parent) {
+                    return;
+                } else {
+                    width = parent.width;
+                }
+            }
+
+            x = ((width - this.width) / 2) + offset | 0;
+        }
+
+        /** Mock ASDoc */
+        final public function alignMiddle(offset:Number = 0):void {
+            y = ((Starling.stageHeight - height) / 2) + offset | 0;
+        }
+
+        /** Mock ASDoc */
+        final public function alignMiddleParent(offset:Number = 0, height:Number = NaN):void {
+            if (isNaN(height)) {
+                if (!parent) {
+                    return;
+                } else {
+                    height = parent.height;
+                }
+            }
+
+            y = ((height - this.height) / 2) + offset | 0;
+        }
+
+        public function moveToFront():void {
+            if (mParent) {
+                mParent.setChildIndex(this, mParent.numChildren - 1);
+            }
+        }
+
         /** Indicates if an object occupies any visible area. (Which is the case when its 'alpha', 
          *  'scaleX' and 'scaleY' values are not zero, and its 'visible' property is enabled.) */
         public function get hasVisibleArea():Boolean
@@ -571,6 +612,17 @@ package starling.display
             if (actualHeight != 0.0) scaleY = value / actualHeight;
         }
         
+
+        /** Mock ASDoc */
+        public function get realWidth():Number {
+            return (scaleX != 0 ? width / scaleX : 0)
+        }
+
+        /** Mock ASDoc */
+        public function get realHeight():Number {
+            return (scaleY != 0 ? height / scaleY : 0)
+        }
+
         /** The x coordinate of the object relative to the local coordinates of the parent. */
         public function get x():Number { return mX; }
         public function set x(value:Number):void 
@@ -581,7 +633,79 @@ package starling.display
                 mOrientationChanged = true;
             }
         }
-        
+
+        public function get absoluteX():Number {
+            getBounds(mParent, sHelperRect);
+
+            return sHelperRect.x;
+        }
+
+        public function set absoluteX(value:Number):void {
+            getBounds(mParent, sHelperRect);
+
+            x = value + mX - sHelperRect.x | 0;
+        }
+
+        public function get absoluteY():Number {
+            getBounds(mParent, sHelperRect);
+
+            return sHelperRect.y;
+        }
+
+        public function set absoluteY(value:Number):void {
+            getBounds(mParent, sHelperRect);
+
+            y = value + mY - sHelperRect.y | 0;
+        }
+
+        public function get absoluteBottom():Number {
+            getBounds(mParent, sHelperRect);
+
+            return sHelperRect.y + sHelperRect.height;
+        }
+
+        public function set absoluteBottom(value:Number):void {
+            getBounds(mParent, sHelperRect);
+
+            y = value + mY - sHelperRect.y - sHelperRect.height | 0;
+        }
+
+        public function get absoluteRight():Number {
+            getBounds(mParent, sHelperRect);
+
+            return sHelperRect.x + sHelperRect.width;
+        }
+
+        public function set absoluteRight(value:Number):void {
+            getBounds(mParent, sHelperRect);
+
+            x = value + mX - sHelperRect.x - sHelperRect.width | 0;
+        }
+
+        public function get absoluteCenter():Number {
+            getBounds(mParent, sHelperRect);
+
+            return sHelperRect.x + sHelperRect.width / 2 | 0;
+        }
+
+        public function set absoluteCenter(value:Number):void {
+            getBounds(mParent, sHelperRect);
+
+            x = value + mX - sHelperRect.x - sHelperRect.width / 2 | 0;
+        }
+
+        public function get absoluteMiddle():Number {
+            getBounds(mParent, sHelperRect);
+
+            return sHelperRect.y + sHelperRect.height / 2 | 0;
+        }
+
+        public function set absoluteMiddle(value:Number):void {
+            getBounds(mParent, sHelperRect);
+
+            y = value + mY - sHelperRect.y - sHelperRect.height / 2 | 0;
+        }
+
         /** The y coordinate of the object relative to the local coordinates of the parent. */
         public function get y():Number { return mY; }
         public function set y(value:Number):void 
@@ -676,7 +800,43 @@ package starling.display
                 mOrientationChanged = true;
             }
         }
-        
+
+        /** Mock ASDoc */
+        public function get right():Number {
+            return x + width;
+        }
+
+        public function set right(value:Number):void {
+            x = value - width | 0;
+        }
+
+        /** Mock ASDoc */
+        public function get bottom():Number {
+            return y + height;
+        }
+
+        public function set bottom(value:Number):void {
+            y = value - height | 0;
+        }
+
+        /** Mock ASDoc */
+        public function get center():Number {
+            return x + width / 2;
+        }
+
+        public function set center(value:Number):void {
+            x = value - width / 2 | 0;
+        }
+
+        /** Mock ASDoc */
+        public function get middle():Number {
+            return y + height / 2;
+        }
+
+        public function set middle(value:Number):void {
+            y = value - height / 2 | 0;
+        }
+
         /** The opacity of the object. 0 = transparent, 1 = opaque. */
         public function get alpha():Number { return mAlpha; }
         public function set alpha(value:Number):void 

@@ -74,6 +74,9 @@ package starling.text
         private var mHelperImage:Image;
         private var mCharLocationPool:Vector.<CharLocation>;
         
+        protected var _offsetX:int;
+        protected var _offsetY:int;
+        
         /** Creates a bitmap font by parsing an XML file and uses the specified texture. 
          *  If you don't pass any data, the "mini" font will be created. */
         public function BitmapFont(texture:Texture=null, fontXml:XML=null)
@@ -129,8 +132,8 @@ package starling.text
                 var xAdvance:Number = parseFloat(charElement.attribute("xadvance")) / scale;
                 
                 var region:Rectangle = new Rectangle();
-                region.x = parseFloat(charElement.attribute("x")) / scale + frame.x;
-                region.y = parseFloat(charElement.attribute("y")) / scale + frame.y;
+                region.x = parseFloat(charElement.attribute("x")) / scale + frame.x + _offsetX;
+                region.y = parseFloat(charElement.attribute("y")) / scale + frame.y + _offsetY;
                 region.width  = parseFloat(charElement.attribute("width")) / scale;
                 region.height = parseFloat(charElement.attribute("height")) / scale;
                 
@@ -188,15 +191,17 @@ package starling.text
         
         /** Draws text into a QuadBatch. */
         public function fillQuadBatch(quadBatch:QuadBatch, width:Number, height:Number, text:String,
-                                      fontSize:Number=-1, color:uint=0xffffff, 
+                                      fontSize:Number=-1, color:uint=0xffffff, smoothing:String="bilinear",
                                       hAlign:String="center", vAlign:String="center",      
                                       autoScale:Boolean=true, 
-                                      kerning:Boolean=true):void
+                                      kerning:Boolean=true, colorsVector:Vector.<uint> = null,
+                                      offsetX:int = 0, offsetY:int = 0):void
         {
             var charLocations:Vector.<CharLocation> = arrangeChars(width, height, text, fontSize, 
                                                                    hAlign, vAlign, autoScale, kerning);
             var numChars:int = charLocations.length;
             mHelperImage.color = color;
+            mHelperImage.smoothing = smoothing;
             
             if (numChars > 8192)
                 throw new ArgumentError("Bitmap Font text is limited to 8192 characters.");
@@ -206,9 +211,12 @@ package starling.text
                 var charLocation:CharLocation = charLocations[i];
                 mHelperImage.texture = charLocation.char.texture;
                 mHelperImage.readjustSize();
-                mHelperImage.x = charLocation.x;
-                mHelperImage.y = charLocation.y;
+                mHelperImage.x = offsetX + charLocation.x;
+                mHelperImage.y = offsetY + charLocation.y;
                 mHelperImage.scaleX = mHelperImage.scaleY = charLocation.scale;
+                if (colorsVector){
+                    mHelperImage.color = colorsVector[i];
+                }
                 quadBatch.addImage(mHelperImage);
             }
         }
