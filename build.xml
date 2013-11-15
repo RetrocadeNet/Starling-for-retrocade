@@ -49,6 +49,7 @@
                     <arg value="starling.filters.DisplacementMapFilter"/>
                     <arg value="starling.filters.FragmentFilter"/>
                     <arg value="starling.filters.FragmentFilterMode"/>
+                    <arg value="starling.filters.WarpFilter"/>
                     <arg value="starling.text.TextField"/>
                     <arg value="starling.text.BitmapFont"/>
                     <arg value="starling.textures.Texture"/>

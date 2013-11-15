@@ -100,6 +100,7 @@ package starling.text
         private var mColorVector:Vector.<uint>;
         private var mCustomBatch:Vector.<TextFieldBatch>;
         private var mBatchable:Boolean;
+        private var mCharactersToShow:Number;
         
         private var mHitArea:DisplayObject;
         private var mBorder:DisplayObjectContainer;
@@ -350,7 +351,8 @@ package starling.text
                             batch.height || mHitArea.height, batch.text, batch.size || mFontSize,
                             (batch.color == -1 ? mColor : batch.color),
                             mSmoothing, HAlign.LEFT, VAlign.TOP,
-                            false, true, null, batch.x,  batch.y
+                            false, true, null, batch.x,  batch.y,
+                        mCharactersToShow
                     );
                 }
             } else {
@@ -372,7 +374,7 @@ package starling.text
 	            
 	                bitmapFont.fillQuadBatch(mQuadBatch,
 	                    mHitArea.width, mHitArea.height, mText, mFontSize, mColor, mSmoothing,
-	                        mHAlign, mVAlign, mAutoScale, mKerning, mColorVector);
+	                        mHAlign, mVAlign, mAutoScale, mKerning, mColorVector, 0, 0, mCharactersToShow);
 	            
 	            mQuadBatch.batchable = mBatchable;
 	            
@@ -781,6 +783,17 @@ package starling.text
         public function set smoothing(value:String):void {
             if (value != mSmoothing){
                 mSmoothing = value;
+                mRequiresRedraw = true;
+            }
+        }
+
+        public function get charactersToShow():Number {
+            return mCharactersToShow;
+        }
+
+        public function set charactersToShow(value:Number):void {
+            if (charactersToShow !== value){
+                mCharactersToShow = value;
                 mRequiresRedraw = true;
             }
         }

@@ -58,6 +58,32 @@ package starling.utils
         {
             return (alpha << 24) | (red << 16) | (green << 8) | blue;
         }
+
+        public static function approachColor(current:uint, target:uint, step:uint):uint{
+            var currentRed:uint = getRed(current);
+            var currentGreen:uint = getGreen(current);
+            var currentBlue:uint = getBlue(current);
+            var targetRed:uint = getRed(target);
+            var targetGreen:uint = getGreen(target);
+            var targetBlue:uint = getBlue(target);
+
+            currentRed = approachColorSubStep(currentRed, targetRed, step);
+            currentGreen = approachColorSubStep(currentGreen, targetGreen, step);
+            currentBlue = approachColorSubStep(currentBlue, targetBlue, step);
+
+            return rgb(currentRed, currentGreen, currentBlue);
+        }
+
+        private static function approachColorSubStep(current:uint, target:uint, step:uint):uint{
+            var diff:uint = current > target ? current - target : target - current;
+            var sign:int = current > target ? -1 : 1;
+
+            if (diff < step){
+                step = diff;
+            }
+
+            return current + step * sign;
+        }
         
         /** @private */
         public function Color() { throw new AbstractClassError(); }

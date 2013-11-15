@@ -195,14 +195,14 @@ package starling.text
                                       hAlign:String="center", vAlign:String="center",      
                                       autoScale:Boolean=true, 
                                       kerning:Boolean=true, colorsVector:Vector.<uint> = null,
-                                      offsetX:int = 0, offsetY:int = 0):void
+                                      offsetX:int = 0, offsetY:int = 0, charsToShow:Number = NaN):void
         {
             var charLocations:Vector.<CharLocation> = arrangeChars(width, height, text, fontSize, 
                                                                    hAlign, vAlign, autoScale, kerning);
-            var numChars:int = charLocations.length;
+            var numChars:int = isNaN(charsToShow) ? charLocations.length : Math.min(charLocations.length, charsToShow);
             mHelperImage.color = color;
             mHelperImage.smoothing = smoothing;
-            
+
             if (numChars > 8192)
                 throw new ArgumentError("Bitmap Font text is limited to 8192 characters.");
 
