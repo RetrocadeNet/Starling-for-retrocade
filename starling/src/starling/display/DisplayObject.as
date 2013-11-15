@@ -32,16 +32,27 @@ package starling.display
     
     /** Dispatched when an object is added to a parent. */
     [Event(name="added", type="starling.events.Event")]
+    
     /** Dispatched when an object is connected to the stage (directly or indirectly). */
     [Event(name="addedToStage", type="starling.events.Event")]
+    
     /** Dispatched when an object is removed from its parent. */
     [Event(name="removed", type="starling.events.Event")]
+    
     /** Dispatched when an object is removed from the stage and won't be rendered any longer. */ 
     [Event(name="removedFromStage", type="starling.events.Event")]
+    
     /** Dispatched once every frame on every object that is connected to the stage. */ 
     [Event(name="enterFrame", type="starling.events.EnterFrameEvent")]
+    
     /** Dispatched when an object is touched. Bubbles. */
     [Event(name="touch", type="starling.events.TouchEvent")]
+    
+    /** Dispatched when a key on the keyboard is released. */
+    [Event(name="keyUp", type="starling.events.KeyboardEvent")]
+    
+    /** Dispatched when a key on the keyboard is pressed. */
+    [Event(name="keyDown", type="starling.events.KeyboardEvent")]
     
     /**
      *  The DisplayObject class is the base class for all objects that are rendered on the 
@@ -134,6 +145,7 @@ package starling.display
         private var mTransformationMatrix:Matrix;
         private var mOrientationChanged:Boolean;
         private var mFilter:FragmentFilter;
+        private var mLastDispatchedStageEventType:String;
         
         /** Helper objects. */
         private static var sAncestors:Vector.<DisplayObject> = new <DisplayObject>[];
@@ -411,6 +423,26 @@ package starling.display
             while (angle < -Math.PI) angle += Math.PI * 2.0;
             while (angle >  Math.PI) angle -= Math.PI * 2.0;
             return angle;
+        }
+        
+        // stage event optimization
+        
+        public override function dispatchEvent(event:Event):void
+        {
+            // These events must always be dispatched alternately. E.g. it must not be allowed
+            // that an object receives two "REMOVED_FROM_STAGE" events in direct succession.
+            
+            var eventType:String = event.type;
+            
+            if ((eventType == Event.ADDED_TO_STAGE || eventType == Event.REMOVED_FROM_STAGE))
+            {
+                if (mLastDispatchedStageEventType == eventType)
+                    return;
+                else
+                    mLastDispatchedStageEventType = eventType;
+            }
+            
+            super.dispatchEvent(event);
         }
         
         // enter frame event optimization
@@ -863,10 +895,12 @@ package starling.display
         public function get name():String { return mName; }
         public function set name(value:String):void { mName = value; }
         
-        /** The filter that is attached to the display object. The starling.filters 
+        /** The filter that is attached to the display object. The starling.filters
          *  package contains several classes that define specific filters you can use. 
          *  Beware that you should NOT use the same filter on more than one object (for 
-         *  performance reasons). */ 
+         *  performance reasons). Furthermore, when you set this property to 'null' or
+         *  assign a different filter, the previous filter is NOT disposed automatically
+         *  (since you might want to reuse it). */
         public function get filter():FragmentFilter { return mFilter; }
         public function set filter(value:FragmentFilter):void { mFilter = value; }
         
