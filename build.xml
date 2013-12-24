@@ -35,8 +35,6 @@
                     <arg value="starling.core.Starling"/>
                     <arg value="starling.core.starling_internal"/>
                     <arg value="starling.core.StatsDisplay"/>
-                    <arg value="starling.core.TouchMarker"/>
-                    <arg value="starling.core.TouchProcessor"/>
                     <arg value="starling.display.Image"/>
                     <arg value="starling.display.Sprite"/>
                     <arg value="starling.display.MovieClip"/>
