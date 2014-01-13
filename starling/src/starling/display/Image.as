@@ -38,7 +38,7 @@ package starling.display
      */ 
     public class Image extends Quad
     {
-        private var mTexture:Texture;
+        protected var mTexture:Texture;
         private var mSmoothing:String;
         
         private var mVertexDataCache:VertexData;

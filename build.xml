@@ -1,5 +1,5 @@
 <project name="Framework 3.0" basedir="." default="releaseStarling">
-    <import file="../Ant/sdkResolve.xml"/>
+    <import file="../../Ant/sdkResolve.xml"/>
 
     <taskdef resource="flexTasks.tasks" classpath="${SDK}/ant/lib/flexTasks.jar" />
 
@@ -17,7 +17,7 @@
         <sequential>
             <resolveSdk46 />
 
-            <exec executable='${SDK}/bin/compc.exe' resolveexecutable="true">
+            <exec executable='${SDK}/bin/compc.bat' resolveexecutable="true">
                 <arg value="-compiler.incremental=true" />
                 <arg value="-load-config=${SDK}/frameworks/air-config.xml" />
                 <arg value="-target-player=11.6" />

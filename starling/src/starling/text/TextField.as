@@ -258,8 +258,13 @@ package starling.text
             sNativeTextField.antiAliasType = AntiAliasType.ADVANCED;
             sNativeTextField.selectable = false;            
             sNativeTextField.multiline = true;            
-            sNativeTextField.wordWrap = true;            
-            sNativeTextField.text = mText;
+            sNativeTextField.wordWrap = true;
+            if (mHtmlText){
+                sNativeTextField.text = mText;
+                sNativeTextField.htmlText = mText;
+            } else {
+                sNativeTextField.text = mText;
+            }
             sNativeTextField.embedFonts = true;
             sNativeTextField.filters = mNativeFilters;
             
@@ -309,7 +314,8 @@ package starling.text
                 bitmapData.draw(sNativeTextField, drawMatrix);
             
             sNativeTextField.text = "";
-            
+            sNativeTextField.htmlText = "";
+
             // update textBounds rectangle
             resultTextBounds.setTo(xOffset   / scale, yOffset    / scale,
                                    textWidth / scale, textHeight / scale);
@@ -696,7 +702,7 @@ package starling.text
             mNativeFilters = value.concat();
             mRequiresRedraw = true;
         }
-        
+
         public function get colorVector():Vector.<uint> { return mColorVector; }
         public function set colorVector(value:Vector.<uint>):void{
             if (mColorVector != value){
